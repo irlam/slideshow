@@ -13,8 +13,22 @@ body {
     height: 100vh;
     justify-content: center;
     overflow: hidden;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #667eea 100%);
     background-attachment: fixed;
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 .main {
@@ -72,13 +86,24 @@ small {
     font-weight: 600;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .btn:hover {
     background: rgba(255, 255, 255, 0.9);
     color: #667eea;
     transform: scale(1.05);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+    50% {
+        box-shadow: 0 8px 35px rgba(102, 126, 234, 0.6);
+    }
 }
 
 #prev {
@@ -146,13 +171,14 @@ small {
     font-weight: 500;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .control-btn:hover {
     background: rgba(255, 255, 255, 0.9);
     color: #667eea;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 /* Modal Styles */
@@ -426,13 +452,25 @@ small {
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    animation: float 3s ease-in-out infinite;
 }
 
 .upload-btn:hover {
     background: rgba(255, 255, 255, 0.9);
     color: #667eea;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    animation: none;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
 }
 
 .upload-btn input[type="file"] {
@@ -595,35 +633,44 @@ small {
     
     .title {
         width: 90%;
-        margin-top: -40px;
+        margin-top: -20px;
     }
     
     .container {
         width: 95%;
-        margin-top: 40px;
+        margin-top: 30px;
+        flex-wrap: wrap;
     }
 
     .image-container {
-        width: 150px;
-        height: 150px;
+        width: 200px;
+        height: 200px;
+        margin-top: 20px;
+        order: 1;
+        flex-basis: 100%;
     }
 
     .image-container span img {
-        height: 120px;
-    }
-
-    .btn {
-        padding: 8px 15px;
-        font-size: 20px;
         height: 150px;
     }
 
+    .btn {
+        padding: 15px 35px;
+        font-size: 28px;
+        height: auto;
+        order: 2;
+    }
+
     #prev {
-        right: 10px;
+        position: relative;
+        right: auto;
+        left: auto;
     }
 
     #next {
-        left: 10px;
+        position: relative;
+        left: auto;
+        right: auto;
     }
     
     .modal-content-wrapper {
