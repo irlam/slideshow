@@ -108,13 +108,13 @@ small {
 
 #prev {
     position: absolute;
-    right: 150px;
+    left: 150px;
     z-index: 10;
 }
 
 #next {
     position: absolute;
-    left: 150px;
+    right: 150px;
     z-index: 10;
 }
 
@@ -609,12 +609,12 @@ small {
         width: 90%;
     }
     
-    #prev, #next {
-        right: 50px;
+    #prev {
+        left: 50px;
     }
     
     #next {
-        left: 50px;
+        right: 50px;
     }
 }
 
