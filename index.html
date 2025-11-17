@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rotating Image Slider</title>
+    <title>Family Photo Slideshow</title>
     
     <!-- Style CSS -->
     <link rel="stylesheet" href="./style.css">
@@ -13,68 +13,92 @@
 <div class="main">
 
     <div class="title">
-        <h1>Rotating Image Slider</h1>
-        <small>The rotating image slider enhances visual appeal, dynamically presenting a series of images, creating an engaging and interactive user experience.</small>
+        <h1>Family Photo Gallery</h1>
+        <small>Click on any photo to view it fullscreen and add comments. Rotate through our cherished family memories.</small>
     </div>
 
     <div class="container">
 
-        <button id="next" class="btn"><</button>
-
+        <button id="next" class="btn" title="Previous Photo"><</button>
 
         <div class="image-container">
     
-            <span style="--i: 10;">
-                <img src="https://images.pexels.com/photos/1056251/pexels-photo-1056251.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
+            <span style="--i: 1;" data-image-id="0">
+                <img src="images/photo1.svg" alt="Family Photo 1">
             </span>
     
-            <span style="--i: 1;">
-                <img src="https://images.pexels.com/photos/257532/pexels-photo-257532.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
+            <span style="--i: 2;" data-image-id="1">
+                <img src="images/photo2.svg" alt="Family Photo 2">
             </span>
     
-            <span style="--i: 2;">
-                <img src="https://images.pexels.com/photos/127028/pexels-photo-127028.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
+            <span style="--i: 3;" data-image-id="2">
+                <img src="images/photo3.svg" alt="Family Photo 3">
             </span>
     
-            <span style="--i: 3;">
-                <img src="https://images.pexels.com/photos/96938/pexels-photo-96938.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
+            <span style="--i: 4;" data-image-id="3">
+                <img src="images/photo4.svg" alt="Family Photo 4">
             </span>
     
-            <span style="--i: 4;">
-                <img src="https://images.pexels.com/photos/1359307/pexels-photo-1359307.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
+            <span style="--i: 5;" data-image-id="4">
+                <img src="images/photo5.svg" alt="Family Photo 5">
             </span>
             
-            <span style="--i: 5;">
-                <img src="https://images.pexels.com/photos/736530/pexels-photo-736530.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
+            <span style="--i: 6;" data-image-id="5">
+                <img src="images/photo6.svg" alt="Family Photo 6">
             </span>
     
-            <span style="--i: 6;">
-                <img src="https://images.pexels.com/photos/127027/pexels-photo-127027.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
+            <span style="--i: 7;" data-image-id="6">
+                <img src="images/photo7.svg" alt="Family Photo 7">
             </span>
     
-            <span style="--i: 7;">
-                <img src="https://images.pexels.com/photos/735423/pexels-photo-735423.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
+            <span style="--i: 8;" data-image-id="7">
+                <img src="images/photo8.svg" alt="Family Photo 8">
             </span>
     
-            <span style="--i: 8;">
-                <img src="https://images.pexels.com/photos/479009/pexels-photo-479009.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
+            <span style="--i: 9;" data-image-id="8">
+                <img src="images/photo9.svg" alt="Family Photo 9">
             </span>
     
-            <span style="--i: 9;">
-                <img src="https://images.pexels.com/photos/1120049/pexels-photo-1120049.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
-            </span>
-    
-            <span style="--i: 10;">
-                <img src="https://images.pexels.com/photos/1056251/pexels-photo-1056251.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
+            <span style="--i: 10;" data-image-id="9">
+                <img src="images/photo10.svg" alt="Family Photo 10">
             </span>
     
         </div>
 
-        <button id="prev" class="btn">></button>
+        <button id="prev" class="btn" title="Next Photo">></button>
     
+    </div>
+
+    <div class="controls">
+        <button id="pausePlay" class="control-btn">⏸ Pause</button>
     </div>
     
         
+</div>
+
+<!-- Fullscreen Modal -->
+<div id="imageModal" class="modal">
+    <span class="close">&times;</span>
+    <div class="modal-content-wrapper">
+        <img class="modal-content" id="modalImage">
+        <div class="modal-info">
+            <h2 id="imageTitle">Family Photo</h2>
+            
+            <!-- Comments Section -->
+            <div class="comments-section">
+                <h3>Comments</h3>
+                <div id="commentsList" class="comments-list"></div>
+                
+                <div class="add-comment">
+                    <input type="text" id="commentName" placeholder="Your name" maxlength="30">
+                    <textarea id="commentText" placeholder="Add a comment..." rows="3" maxlength="500"></textarea>
+                    <button id="addComment" class="comment-btn">Add Comment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="modal-nav modal-prev" id="modalPrev">❮</button>
+    <button class="modal-nav modal-next" id="modalNext">❯</button>
 </div>
 
 <!-- Script JS -->
