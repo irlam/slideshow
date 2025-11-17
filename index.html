@@ -72,8 +72,39 @@
     <div class="controls">
         <button id="pausePlay" class="control-btn">⏸ Pause</button>
     </div>
+
+    <div class="upload-section">
+        <button id="uploadBtn" class="upload-btn">
+            <span>📤</span> Upload Photo
+        </button>
+    </div>
     
         
+</div>
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="upload-modal">
+    <div class="upload-modal-content">
+        <span class="close" id="uploadClose">&times;</span>
+        <h2>Upload a Photo</h2>
+        
+        <div class="file-drop-zone" id="dropZone">
+            <p>📷 Drag and drop an image here or click to browse</p>
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+        </div>
+        
+        <img id="uploadPreview" class="upload-preview" alt="Preview">
+        
+        <div class="upload-form">
+            <input type="text" id="uploadTitle" placeholder="Photo title (optional)" maxlength="50">
+            <textarea id="uploadComment" placeholder="Add a comment about this photo (optional)" rows="3" maxlength="500"></textarea>
+            
+            <div class="upload-actions">
+                <button id="cancelUpload" class="upload-cancel">Cancel</button>
+                <button id="submitUpload" class="upload-submit">Upload Photo</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Fullscreen Modal -->

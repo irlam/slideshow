@@ -15,33 +15,45 @@ document.addEventListener('DOMContentLoaded', function () {
     const modalPrevBtn = document.getElementById('modalPrev');
     const modalNextBtn = document.getElementById('modalNext');
     
+    // Upload elements
+    const uploadBtn = document.getElementById('uploadBtn');
+    const uploadModal = document.getElementById('uploadModal');
+    const uploadClose = document.getElementById('uploadClose');
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const uploadPreview = document.getElementById('uploadPreview');
+    const uploadTitle = document.getElementById('uploadTitle');
+    const uploadComment = document.getElementById('uploadComment');
+    const submitUpload = document.getElementById('submitUpload');
+    const cancelUpload = document.getElementById('cancelUpload');
+    
     // State
     let currentRotation = 0;
     let timer;
     let isPaused = false;
     let currentImageId = null;
-    const totalImages = 10;
+    let totalImages = 10;
+    let selectedFile = null;
     
     // Images data
-    const images = Array.from(document.querySelectorAll('.image-container span')).map((span, index) => ({
-        id: index,
-        src: span.querySelector('img').src,
-        alt: span.querySelector('img').alt || `Family Photo ${index + 1}`,
-        element: span
-    }));
+    let images = [];
     
     // Initialize
     loadCommentsFromStorage();
+    loadUploadedImages();
+    initializeImages();
     
     // Carousel Navigation
     prevEl.addEventListener('click', () => {
-        currentRotation += 36;
+        const rotateAmount = 360 / totalImages;
+        currentRotation += rotateAmount;
         clearTimeout(timer);
         updateGallery();
     });
 
     nextEl.addEventListener('click', () => {
-        currentRotation -= 36;
+        const rotateAmount = 360 / totalImages;
+        currentRotation -= rotateAmount;
         clearTimeout(timer);
         updateGallery();
     });
@@ -119,8 +131,9 @@ document.addEventListener('DOMContentLoaded', function () {
         imageContainerEl.style.transform = `perspective(1000px) rotateY(${currentRotation}deg)`;
         
         if (!isPaused) {
+            const rotateAmount = 360 / totalImages;
             timer = setTimeout(() => {
-                currentRotation += 36;
+                currentRotation += rotateAmount;
                 updateGallery();
             }, 3000);
         }
@@ -238,6 +251,218 @@ document.addEventListener('DOMContentLoaded', function () {
         if (diffDays < 7) return `${diffDays}d ago`;
         
         return date.toLocaleDateString();
+    }
+    
+    // Upload functionality
+    uploadBtn.addEventListener('click', () => {
+        openUploadModal();
+    });
+    
+    uploadClose.addEventListener('click', () => {
+        closeUploadModal();
+    });
+    
+    cancelUpload.addEventListener('click', () => {
+        closeUploadModal();
+    });
+    
+    uploadModal.addEventListener('click', (e) => {
+        if (e.target === uploadModal) {
+            closeUploadModal();
+        }
+    });
+    
+    dropZone.addEventListener('click', () => {
+        fileInput.click();
+    });
+    
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    });
+    
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('drag-over');
+    });
+    
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFileSelect(files[0]);
+        }
+    });
+    
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFileSelect(e.target.files[0]);
+        }
+    });
+    
+    submitUpload.addEventListener('click', () => {
+        uploadImage();
+    });
+    
+    function openUploadModal() {
+        uploadModal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeUploadModal() {
+        uploadModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        resetUploadForm();
+    }
+    
+    function resetUploadForm() {
+        fileInput.value = '';
+        uploadPreview.classList.remove('show');
+        uploadPreview.src = '';
+        uploadTitle.value = '';
+        uploadComment.value = '';
+        selectedFile = null;
+    }
+    
+    function handleFileSelect(file) {
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file');
+            return;
+        }
+        
+        // Check file size (limit to 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image file is too large. Please select an image smaller than 5MB');
+            return;
+        }
+        
+        selectedFile = file;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            uploadPreview.src = e.target.result;
+            uploadPreview.classList.add('show');
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    function uploadImage() {
+        if (!selectedFile) {
+            alert('Please select an image to upload');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const imageData = {
+                id: Date.now(),
+                src: e.target.result,
+                alt: uploadTitle.value.trim() || `Uploaded Photo ${Date.now()}`,
+                uploaded: true,
+                uploadDate: new Date().toISOString()
+            };
+            
+            // Save to localStorage
+            saveUploadedImage(imageData);
+            
+            // Add initial comment if provided
+            if (uploadComment.value.trim()) {
+                const comment = {
+                    id: Date.now(),
+                    imageId: images.length, // Will be the new image's index
+                    author: 'Uploader',
+                    text: uploadComment.value.trim(),
+                    date: new Date().toISOString()
+                };
+                saveComment(comment);
+            }
+            
+            // Reload images and refresh carousel
+            loadUploadedImages();
+            initializeImages();
+            recalculateCarousel();
+            
+            // Close modal
+            closeUploadModal();
+            
+            // Show success message
+            alert('Photo uploaded successfully!');
+        };
+        reader.readAsDataURL(selectedFile);
+    }
+    
+    function saveUploadedImage(imageData) {
+        let uploadedImages = JSON.parse(localStorage.getItem('uploadedImages') || '[]');
+        uploadedImages.push(imageData);
+        localStorage.setItem('uploadedImages', JSON.stringify(uploadedImages));
+    }
+    
+    function loadUploadedImages() {
+        const uploadedImages = JSON.parse(localStorage.getItem('uploadedImages') || '[]');
+        
+        // Add uploaded images to the carousel
+        uploadedImages.forEach((imgData, index) => {
+            const existingSpan = document.querySelector(`[data-uploaded-id="${imgData.id}"]`);
+            if (!existingSpan) {
+                const span = document.createElement('span');
+                const totalSpans = imageContainerEl.querySelectorAll('span').length;
+                span.style.setProperty('--i', totalSpans + 1);
+                span.setAttribute('data-uploaded-id', imgData.id);
+                span.setAttribute('data-image-id', totalSpans);
+                
+                const img = document.createElement('img');
+                img.src = imgData.src;
+                img.alt = imgData.alt;
+                img.style.cursor = 'pointer';
+                
+                span.appendChild(img);
+                imageContainerEl.appendChild(span);
+            }
+        });
+    }
+    
+    function initializeImages() {
+        images = Array.from(document.querySelectorAll('.image-container span')).map((span, index) => {
+            span.setAttribute('data-image-id', index);
+            return {
+                id: index,
+                src: span.querySelector('img').src,
+                alt: span.querySelector('img').alt || `Photo ${index + 1}`,
+                element: span
+            };
+        });
+        
+        totalImages = images.length;
+        
+        // Add click handlers to all images
+        images.forEach((image, index) => {
+            const img = image.element.querySelector('img');
+            // Remove old listeners by cloning
+            const newImg = img.cloneNode(true);
+            img.parentNode.replaceChild(newImg, img);
+            
+            newImg.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openModal(index);
+            });
+        });
+    }
+    
+    function recalculateCarousel() {
+        const anglePerImage = 360 / totalImages;
+        
+        // Update CSS variable for each span
+        images.forEach((image, index) => {
+            image.element.style.setProperty('--i', index + 1);
+        });
+        
+        // Update rotation logic
+        const oldRotateAmount = 36; // Old value for 10 images
+        const newRotateAmount = anglePerImage;
+        
+        // Store the recalculate function for navigation
+        window.carouselRotateAmount = newRotateAmount;
     }
     
     function escapeHtml(text) {
