@@ -381,31 +381,38 @@ document.addEventListener('DOMContentLoaded', function () {
                     serverStored: true
                 };
                 
-                // Save to localStorage
-                saveUploadedImage(imageData);
-                
-                // Add initial comment if provided
-                if (data.comment) {
-                    const comment = {
-                        id: Date.now(),
-                        imageId: images.length,
-                        author: 'Uploader',
-                        text: data.comment,
-                        date: new Date().toISOString()
-                    };
-                    saveComment(comment);
+                try {
+                    // Save to localStorage
+                    saveUploadedImage(imageData);
+                    
+                    // Add initial comment if provided
+                    if (data.comment) {
+                        const comment = {
+                            id: Date.now(),
+                            imageId: images.length,
+                            author: 'Uploader',
+                            text: data.comment,
+                            date: new Date().toISOString()
+                        };
+                        saveComment(comment);
+                    }
+                    
+                    // Reload images and refresh carousel
+                    loadUploadedImages();
+                    initializeImages();
+                    recalculateCarousel();
+                    
+                    // Close modal
+                    closeUploadModal();
+                    
+                    // Show success message
+                    alert('Photo uploaded successfully to server!');
+                } catch (saveError) {
+                    console.error('Failed to save image reference:', saveError);
+                    alert('Photo uploaded to server but failed to save locally: ' + saveError.message);
+                    // Still close modal since server upload succeeded
+                    closeUploadModal();
                 }
-                
-                // Reload images and refresh carousel
-                loadUploadedImages();
-                initializeImages();
-                recalculateCarousel();
-                
-                // Close modal
-                closeUploadModal();
-                
-                // Show success message
-                alert('Photo uploaded successfully to server!');
             } else {
                 throw new Error(data.error || 'Upload failed');
             }
@@ -425,31 +432,37 @@ document.addEventListener('DOMContentLoaded', function () {
                     serverStored: false
                 };
                 
-                // Save to localStorage
-                saveUploadedImage(imageData);
-                
-                // Add initial comment if provided
-                if (uploadComment.value.trim()) {
-                    const comment = {
-                        id: Date.now(),
-                        imageId: images.length,
-                        author: 'Uploader',
-                        text: uploadComment.value.trim(),
-                        date: new Date().toISOString()
-                    };
-                    saveComment(comment);
+                try {
+                    // Save to localStorage
+                    saveUploadedImage(imageData);
+                    
+                    // Add initial comment if provided
+                    if (uploadComment.value.trim()) {
+                        const comment = {
+                            id: Date.now(),
+                            imageId: images.length,
+                            author: 'Uploader',
+                            text: uploadComment.value.trim(),
+                            date: new Date().toISOString()
+                        };
+                        saveComment(comment);
+                    }
+                    
+                    // Reload images and refresh carousel
+                    loadUploadedImages();
+                    initializeImages();
+                    recalculateCarousel();
+                    
+                    // Close modal
+                    closeUploadModal();
+                    
+                    // Show success message
+                    alert('Photo uploaded successfully (saved locally)!');
+                } catch (saveError) {
+                    console.error('Failed to save image:', saveError);
+                    alert('Error: ' + saveError.message);
+                    // Don't close modal so user can try again with a smaller image
                 }
-                
-                // Reload images and refresh carousel
-                loadUploadedImages();
-                initializeImages();
-                recalculateCarousel();
-                
-                // Close modal
-                closeUploadModal();
-                
-                // Show success message
-                alert('Photo uploaded successfully (saved locally)!');
             };
             reader.readAsDataURL(selectedFile);
         })
@@ -461,9 +474,38 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     
     function saveUploadedImage(imageData) {
-        let uploadedImages = JSON.parse(localStorage.getItem('uploadedImages') || '[]');
-        uploadedImages.push(imageData);
-        localStorage.setItem('uploadedImages', JSON.stringify(uploadedImages));
+        try {
+            let uploadedImages = JSON.parse(localStorage.getItem('uploadedImages') || '[]');
+            uploadedImages.push(imageData);
+            localStorage.setItem('uploadedImages', JSON.stringify(uploadedImages));
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                // Storage quota exceeded - offer to clear old images
+                const clearOld = confirm(
+                    'Browser storage is full! Would you like to clear old uploaded images to make room?\n\n' +
+                    'Click OK to clear old images and try again, or Cancel to keep existing images.'
+                );
+                
+                if (clearOld) {
+                    // Clear old uploaded images
+                    localStorage.removeItem('uploadedImages');
+                    
+                    // Try saving again
+                    try {
+                        const uploadedImages = [imageData];
+                        localStorage.setItem('uploadedImages', JSON.stringify(uploadedImages));
+                        alert('Old images cleared. Your new photo has been saved.');
+                    } catch (e2) {
+                        // If it still fails, the image is too large
+                        throw new Error('Image is too large to store. Please try a smaller image.');
+                    }
+                } else {
+                    throw new Error('Storage is full. Cannot save image.');
+                }
+            } else {
+                throw e;
+            }
+        }
     }
     
     function loadUploadedImages() {
