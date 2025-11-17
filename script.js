@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const modal = document.getElementById('imageModal');
     const modalImg = document.getElementById('modalImage');
     const modalTitle = document.getElementById('imageTitle');
-    const closeModal = document.querySelector('.close');
+    const closeModal = document.getElementById('imageModalClose');
     const commentsList = document.getElementById('commentsList');
     const commentName = document.getElementById('commentName');
     const commentText = document.getElementById('commentText');
