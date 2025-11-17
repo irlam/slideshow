@@ -353,43 +353,111 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const imageData = {
-                id: Date.now(),
-                src: e.target.result,
-                alt: uploadTitle.value.trim() || `Uploaded Photo ${Date.now()}`,
-                uploaded: true,
-                uploadDate: new Date().toISOString()
-            };
-            
-            // Save to localStorage
-            saveUploadedImage(imageData);
-            
-            // Add initial comment if provided
-            if (uploadComment.value.trim()) {
-                const comment = {
+        // Show loading state
+        submitUpload.disabled = true;
+        submitUpload.textContent = 'Uploading...';
+        
+        // Create FormData for server upload
+        const formData = new FormData();
+        formData.append('image', selectedFile);
+        formData.append('title', uploadTitle.value.trim() || `Uploaded Photo ${Date.now()}`);
+        formData.append('comment', uploadComment.value.trim());
+        
+        // Try to upload to server first
+        fetch('upload.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Server upload successful
+                const imageData = {
                     id: Date.now(),
-                    imageId: images.length, // Will be the new image's index
-                    author: 'Uploader',
-                    text: uploadComment.value.trim(),
-                    date: new Date().toISOString()
+                    src: data.url,
+                    alt: data.title,
+                    uploaded: true,
+                    uploadDate: data.uploadDate,
+                    serverStored: true
                 };
-                saveComment(comment);
+                
+                // Save to localStorage
+                saveUploadedImage(imageData);
+                
+                // Add initial comment if provided
+                if (data.comment) {
+                    const comment = {
+                        id: Date.now(),
+                        imageId: images.length,
+                        author: 'Uploader',
+                        text: data.comment,
+                        date: new Date().toISOString()
+                    };
+                    saveComment(comment);
+                }
+                
+                // Reload images and refresh carousel
+                loadUploadedImages();
+                initializeImages();
+                recalculateCarousel();
+                
+                // Close modal
+                closeUploadModal();
+                
+                // Show success message
+                alert('Photo uploaded successfully to server!');
+            } else {
+                throw new Error(data.error || 'Upload failed');
             }
+        })
+        .catch(error => {
+            console.warn('Server upload failed, falling back to localStorage:', error);
             
-            // Reload images and refresh carousel
-            loadUploadedImages();
-            initializeImages();
-            recalculateCarousel();
-            
-            // Close modal
-            closeUploadModal();
-            
-            // Show success message
-            alert('Photo uploaded successfully!');
-        };
-        reader.readAsDataURL(selectedFile);
+            // Fallback to localStorage if server upload fails
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const imageData = {
+                    id: Date.now(),
+                    src: e.target.result,
+                    alt: uploadTitle.value.trim() || `Uploaded Photo ${Date.now()}`,
+                    uploaded: true,
+                    uploadDate: new Date().toISOString(),
+                    serverStored: false
+                };
+                
+                // Save to localStorage
+                saveUploadedImage(imageData);
+                
+                // Add initial comment if provided
+                if (uploadComment.value.trim()) {
+                    const comment = {
+                        id: Date.now(),
+                        imageId: images.length,
+                        author: 'Uploader',
+                        text: uploadComment.value.trim(),
+                        date: new Date().toISOString()
+                    };
+                    saveComment(comment);
+                }
+                
+                // Reload images and refresh carousel
+                loadUploadedImages();
+                initializeImages();
+                recalculateCarousel();
+                
+                // Close modal
+                closeUploadModal();
+                
+                // Show success message
+                alert('Photo uploaded successfully (saved locally)!');
+            };
+            reader.readAsDataURL(selectedFile);
+        })
+        .finally(() => {
+            // Reset button state
+            submitUpload.disabled = false;
+            submitUpload.textContent = 'Upload Photo';
+        });
     }
     
     function saveUploadedImage(imageData) {
