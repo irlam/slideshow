@@ -1,0 +1,37 @@
+---
+# File name: .cpanel.yml
+#
+# What this file does:
+# --------------------
+# - Defines the deployment steps for cPanel's "Git Version Control" feature.
+# - Every time you click "Deploy Head Commit" (or auto-deploy runs),
+#   cPanel will execute each command in `deployment: tasks:`.
+# - This configuration:
+#   1) Cleans the target deployment directory
+#   2) Copies the latest version of your slideshow files into it
+#
+# Notes:
+# - Update DEPLOY_DIR to the exact directory where the live site should run.
+# - Make sure the directory is writable by your cPanel user.
+#
+# Last updated: 17/11/2025 (UK format: DD/MM/YYYY)
+
+deployment:
+  tasks:
+    # 1. Set the deployment directory (change this to your actual path)
+    - export DEPLOY_DIR="$HOME/public_html/slideshow"
+
+    # 2. Ensure the deployment directory exists
+    - mkdir -p "$DEPLOY_DIR"
+
+    # 3. Remove old files from deployment directory (but keep .well-known etc if you prefer)
+    #   WARNING: This deletes everything in the directory you are deploying into.
+    #   If you have extra files in that directory, back them up first.
+    - find "$DEPLOY_DIR" -mindepth 1 -maxdepth 1 -exec rm -rf {} \;
+
+    # 4. Copy all project files from the repo into the deployment directory
+    #   - Excludes the .git folder and cPanel-specific files.
+    - rsync -av \
+        --exclude=".git" \
+        --exclude=".cpanel.yml" \
+        ./ "$DEPLOY_DIR"/
